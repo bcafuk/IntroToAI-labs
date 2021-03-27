@@ -1,5 +1,12 @@
 package ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Solution {
     private static final String USAGE_STRING = """
             Usage:
@@ -25,6 +32,66 @@ public class Solution {
 
             System.exit(1);
             return;
+        }
+
+        StateSpace stateSpace;
+        try {
+            stateSpace = StateSpace.read(Files.lines(Path.of(arguments.stateSpacePath)));
+        } catch (IOException e) {
+            System.err.println("Error reading state space descriptor from path " + arguments.stateSpacePath);
+
+            System.exit(1);
+            return;
+        }
+
+        Heuristic heuristic = null;
+        if (arguments.heuristicPath != null) {
+            try {
+                heuristic = Heuristic.read(Files.lines(Path.of(arguments.heuristicPath)));
+            } catch (IOException e) {
+                System.err.println("Error reading heuristic descriptor from path " + arguments.heuristicPath);
+
+                System.exit(1);
+                return;
+            }
+        }
+
+        switch (arguments.operation) {
+            case FIND_SOLUTION: {
+                Algorithm.SearchResult searchResult = (switch (arguments.algorithmIdentifier) {
+                    case BFS -> Algorithms.BREADTH_FIRST_SEARCH;
+                    case UCS -> Algorithms.UNIFORM_COST_SEARCH;
+                    case A_STAR -> Algorithms.A_STAR_SEARCH;
+                }).search(stateSpace, heuristic);
+
+                if (heuristic != null) {
+                    System.out.println("# " + arguments.algorithmIdentifier.friendlyName + " " + arguments.heuristicPath);
+                } else {
+                    System.out.println("# " + arguments.algorithmIdentifier.friendlyName);
+                }
+                System.out.println("[FOUND_SOLUTION]: " + (searchResult == null ? "no" : "yes"));
+
+                if (searchResult != null) {
+                    List<String> path = new LinkedList<>();
+
+                    Node n = searchResult.node;
+                    while (n != null) {
+                        path.add(0, n.state);
+                        n = n.parent;
+                    }
+
+                    System.out.println("[STATES_VISITED]: " + searchResult.visitedCount);
+                    System.out.println("[PATH_LENGTH]: " + path.size());
+                    System.out.printf("[TOTAL_COST]: %.1f\n", searchResult.node.accumulatedCost);
+                    System.out.println("[PATH]: " + String.join(" => ", path));
+                }
+
+                break;
+            }
+            case CHECK_OPTIMISTIC:
+                break;
+            case CHECK_CONSISTENT:
+                break;
         }
     }
 
@@ -96,9 +163,15 @@ public class Solution {
         }
 
         public enum AlgorithmIdentifier {
-            BFS,
-            UCS,
-            A_STAR,
+            BFS("BFS"),
+            UCS("UCS"),
+            A_STAR("A-STAR");
+
+            public String friendlyName;
+
+            AlgorithmIdentifier(String friendlyName) {
+                this.friendlyName = friendlyName;
+            }
         }
 
         public enum Operation {
