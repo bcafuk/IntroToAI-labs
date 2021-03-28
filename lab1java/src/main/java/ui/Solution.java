@@ -56,7 +56,7 @@ public class Solution {
         }
 
         switch (arguments.operation) {
-            case FIND_SOLUTION: {
+            case FIND_SOLUTION -> {
                 SearchAlgorithm.SearchResult searchResult = (switch (arguments.algorithmIdentifier) {
                     case BFS -> SearchAlgorithms.BREADTH_FIRST_SEARCH;
                     case UCS -> SearchAlgorithms.UNIFORM_COST_SEARCH;
@@ -84,17 +84,15 @@ public class Solution {
                     System.out.printf("[TOTAL_COST]: %.1f\n", searchResult.node.accumulatedCost);
                     System.out.println("[PATH]: " + String.join(" => ", path));
                 }
-
-                break;
             }
-            case CHECK_OPTIMISTIC:
+            case CHECK_OPTIMISTIC -> {
                 System.out.println("# HEURISTIC-OPTIMISTIC " + arguments.heuristicPath);
                 Checks.isOptimistic(stateSpace, heuristic);
-                break;
-            case CHECK_CONSISTENT:
+            }
+            case CHECK_CONSISTENT -> {
                 System.out.println("# HEURISTIC-CONSISTENT " + arguments.heuristicPath);
                 Checks.isConsistent(stateSpace, heuristic);
-                break;
+            }
         }
     }
 
@@ -109,11 +107,10 @@ public class Solution {
 
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
-                    case "--alg":
+                    case "--alg" -> {
                         if (arguments.operation != null)
                             throw new IllegalArgumentException("Multiple conflicting modes specified");
-                        arguments.operation = Arguments.Operation.FIND_SOLUTION;
-
+                        arguments.operation = Operation.FIND_SOLUTION;
                         if (i + 1 >= args.length)
                             throw new IllegalArgumentException("--alg specified with no algowithm name");
                         i++;
@@ -123,29 +120,29 @@ public class Solution {
                             case "astar" -> AlgorithmIdentifier.A_STAR;
                             default -> throw new IllegalArgumentException("Unknown algorithm " + args[i]);
                         };
-                        break;
-                    case "--check-optimistic":
+                    }
+                    case "--check-optimistic" -> {
                         if (arguments.operation != null)
                             throw new IllegalArgumentException("Multiple conflicting modes specified");
                         arguments.operation = Operation.CHECK_OPTIMISTIC;
-                        break;
-                    case "--check-consistent":
+                    }
+                    case "--check-consistent" -> {
                         if (arguments.operation != null)
                             throw new IllegalArgumentException("Multiple conflicting modes specified");
                         arguments.operation = Operation.CHECK_CONSISTENT;
-                        break;
-                    case "--ss":
+                    }
+                    case "--ss" -> {
                         if (i + 1 >= args.length)
                             throw new IllegalArgumentException("--ss specified with no path");
                         i++;
                         arguments.stateSpacePath = args[i];
-                        break;
-                    case "--h":
+                    }
+                    case "--h" -> {
                         if (i + 1 >= args.length)
                             throw new IllegalArgumentException("--h specified with no path");
                         i++;
                         arguments.heuristicPath = args[i];
-                        break;
+                    }
                 }
             }
 
