@@ -3,7 +3,7 @@ package ui;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface Algorithm {
+public interface SearchAlgorithm {
     SearchResult search(StateSpace stateSpace, Heuristic heuristic);
 
     class SearchResult {

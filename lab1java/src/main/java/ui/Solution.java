@@ -58,10 +58,10 @@ public class Solution {
 
         switch (arguments.operation) {
             case FIND_SOLUTION: {
-                Algorithm.SearchResult searchResult = (switch (arguments.algorithmIdentifier) {
-                    case BFS -> Algorithms.BREADTH_FIRST_SEARCH;
-                    case UCS -> Algorithms.UNIFORM_COST_SEARCH;
-                    case A_STAR -> Algorithms.A_STAR_SEARCH;
+                SearchAlgorithm.SearchResult searchResult = (switch (arguments.algorithmIdentifier) {
+                    case BFS -> SearchAlgorithms.BREADTH_FIRST_SEARCH;
+                    case UCS -> SearchAlgorithms.UNIFORM_COST_SEARCH;
+                    case A_STAR -> SearchAlgorithms.A_STAR_SEARCH;
                 }).search(stateSpace, heuristic);
 
                 if (heuristic != null) {

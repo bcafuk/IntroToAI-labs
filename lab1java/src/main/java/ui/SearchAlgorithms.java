@@ -2,10 +2,10 @@ package ui;
 
 import java.util.*;
 
-public final class Algorithms {
-    private Algorithms() {}
+public final class SearchAlgorithms {
+    private SearchAlgorithms() {}
 
-    public static final Algorithm BREADTH_FIRST_SEARCH = ((stateSpace, heuristic) -> {
+    public static final SearchAlgorithm BREADTH_FIRST_SEARCH = ((stateSpace, heuristic) -> {
         Queue<Node> open = new LinkedList<>();
         open.add(new Node(stateSpace.getInitialState()));
 
@@ -16,7 +16,7 @@ public final class Algorithms {
             closed.add(n.state);
 
             if (stateSpace.isGoalState(n.state))
-                return new Algorithm.SearchResult(n, closed.size());
+                return new SearchAlgorithm.SearchResult(n, closed.size());
 
             for (StateSpace.Successor m : stateSpace.getSuccessors(n.state))
                 open.add(n.constructChild(m));
@@ -25,7 +25,7 @@ public final class Algorithms {
         return null;
     });
 
-    public static final Algorithm UNIFORM_COST_SEARCH = ((stateSpace, heuristic) -> {
+    public static final SearchAlgorithm UNIFORM_COST_SEARCH = ((stateSpace, heuristic) -> {
         PriorityQueue<Node> open = new PriorityQueue<>((node1, node2) -> {
             if (node1.accumulatedCost == node2.accumulatedCost)
                 return node1.state.compareTo(node2.state);
@@ -41,7 +41,7 @@ public final class Algorithms {
             closed.add(n.state);
 
             if (stateSpace.isGoalState(n.state))
-                return new Algorithm.SearchResult(n, closed.size());
+                return new SearchAlgorithm.SearchResult(n, closed.size());
 
             for (StateSpace.Successor m : stateSpace.getSuccessors(n.state))
                 open.add(n.constructChild(m));
@@ -50,7 +50,7 @@ public final class Algorithms {
         return null;
     });
 
-    public static final Algorithm A_STAR_SEARCH = ((stateSpace, heuristic) -> {
+    public static final SearchAlgorithm A_STAR_SEARCH = ((stateSpace, heuristic) -> {
         Comparator<Node> nodeComparator = (node1, node2) -> {
             double estCost1 = node1.accumulatedCost + heuristic.getEstimatedCost(node1.state);
             double estCost2 = node2.accumulatedCost + heuristic.getEstimatedCost(node2.state);
@@ -78,7 +78,7 @@ public final class Algorithms {
             closed.put(n.state, n.accumulatedCost);
 
             if (stateSpace.isGoalState(n.state))
-                return new Algorithm.SearchResult(n, closed.size());
+                return new SearchAlgorithm.SearchResult(n, closed.size());
 
             for (StateSpace.Successor s : stateSpace.getSuccessors(n.state)) {
                 Node m = n.constructChild(s);
