@@ -5,11 +5,17 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class StateSpace {
+    private final Set<String> states = new TreeSet<>();
     private String initialState = null;
     private Set<String> goalStates = null;
     private final Map<String, Set<Successor>> successors = new HashMap<>();
+    private final Map<String, Set<Successor>> predecessors = new HashMap<>();
 
     private StateSpace() {}
+
+    public Set<String> getStates() {
+        return Collections.unmodifiableSet(states);
+    }
 
     public String getInitialState() {
         return initialState;
@@ -19,8 +25,24 @@ public class StateSpace {
         return goalStates.contains(Objects.requireNonNull(state));
     }
 
+    public Set<String> getGoalStates() {
+        return Collections.unmodifiableSet(goalStates);
+    }
+
     public Set<Successor> getSuccessors(String state) {
-        return Collections.unmodifiableSet(successors.get(Objects.requireNonNull(state)));
+        Set<Successor> set = successors.get(Objects.requireNonNull(state));
+        if (set != null)
+            return Collections.unmodifiableSet(set);
+        else
+            return Collections.emptySet();
+    }
+
+    public Set<Successor> getPredecessors(String state) {
+        Set<Successor> set = predecessors.get(Objects.requireNonNull(state));
+        if (set != null)
+            return Collections.unmodifiableSet(set);
+        else
+            return Collections.emptySet();
     }
 
     private void addSuccessor(String from, String to, double cost) {
@@ -30,6 +52,14 @@ public class StateSpace {
             Set<Successor> successorSet = new TreeSet<>();
             successorSet.add(new Successor(to, cost));
             this.successors.put(from, successorSet);
+        }
+
+        if (this.predecessors.containsKey(to)) {
+            this.predecessors.get(to).add(new Successor(from, cost));
+        } else {
+            Set<Successor> predecessorSet = new TreeSet<>();
+            predecessorSet.add(new Successor(from, cost));
+            this.predecessors.put(to, predecessorSet);
         }
     }
 
@@ -52,6 +82,8 @@ public class StateSpace {
 
             int colonPosition = line.indexOf(':');
             String from = line.substring(0, colonPosition);
+
+            ss.states.add(from);
 
             if (colonPosition + 2 >= line.length())
                 return;

@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Solution {
     private static final String USAGE_STRING = """
@@ -89,8 +88,12 @@ public class Solution {
                 break;
             }
             case CHECK_OPTIMISTIC:
+                System.out.println("# HEURISTIC-OPTIMISTIC " + arguments.heuristicPath);
+                Checks.isOptimistic(stateSpace, heuristic);
                 break;
             case CHECK_CONSISTENT:
+                System.out.println("# HEURISTIC-CONSISTENT " + arguments.heuristicPath);
+                Checks.isConsistent(stateSpace, heuristic);
                 break;
         }
     }
