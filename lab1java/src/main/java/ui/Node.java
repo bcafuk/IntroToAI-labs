@@ -4,23 +4,21 @@ import java.util.Objects;
 
 public class Node {
     public final String state;
-    public final int depth;
     public final Node parent;
     public final double accumulatedCost;
 
     public Node(String state) {
-        this(state, 0, null, 0);
+        this(state, null, 0);
     }
 
-    private Node(String state, int depth, Node parent, double accumulatedCost) {
+    private Node(String state, Node parent, double accumulatedCost) {
         this.state = Objects.requireNonNull(state);
-        this.depth = depth;
         this.parent = parent;
         this.accumulatedCost = accumulatedCost;
     }
 
     public Node constructChild(StateSpace.Successor successor) {
-        return new Node(successor.destination, depth + 1, this, accumulatedCost + successor.cost);
+        return new Node(successor.destination, this, accumulatedCost + successor.cost);
     }
 
     @Override
