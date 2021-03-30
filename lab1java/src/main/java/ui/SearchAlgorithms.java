@@ -7,19 +7,21 @@ public final class SearchAlgorithms {
 
     public static final SearchAlgorithm BREADTH_FIRST_SEARCH = ((stateSpace, heuristic) -> {
         Queue<Node> open = new LinkedList<>();
-        open.add(new Node(stateSpace.getInitialState()));
+        Set<String> opened = new HashSet<>();
 
-        Set<String> closed = new HashSet<>();
+        Node initialNode = new Node(stateSpace.getInitialState());
+        open.add(initialNode);
+        opened.add(initialNode.state);
 
         while (!open.isEmpty()) {
             Node n = open.remove();
-            closed.add(n.state);
 
             if (stateSpace.isGoalState(n.state))
-                return new SearchAlgorithm.SearchResult(n, closed.size());
+                return new SearchAlgorithm.SearchResult(n, opened.size() - open.size());
 
             for (StateSpace.Successor m : stateSpace.getSuccessors(n.state))
-                open.add(n.constructChild(m));
+                if (opened.add(m.destination))
+                    open.add(n.constructChild(m));
         }
 
         return null;
@@ -38,13 +40,19 @@ public final class SearchAlgorithms {
 
         while (!open.isEmpty()) {
             Node n = open.remove();
-            closed.add(n.state);
+
+            if (!closed.add(n.state))
+                continue;
 
             if (stateSpace.isGoalState(n.state))
                 return new SearchAlgorithm.SearchResult(n, closed.size());
 
-            for (StateSpace.Successor m : stateSpace.getSuccessors(n.state))
+            for (StateSpace.Successor m : stateSpace.getSuccessors(n.state)) {
+                if (closed.contains(m.destination))
+                    continue;
+
                 open.add(n.constructChild(m));
+            }
         }
 
         return null;
