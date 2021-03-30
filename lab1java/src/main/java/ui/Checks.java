@@ -12,27 +12,31 @@ public final class Checks {
 
             return Double.compare(node1.accumulatedCost, node2.accumulatedCost);
         });
-        Set<String> opened = new HashSet<>();
+
+        Map<String, Double> costs = new TreeMap<>();
 
         stateSpace.getGoalStates().stream().map(Node::new).forEach(n -> {
             open.add(n);
-            opened.add(n.state);
+            costs.put(n.state, n.accumulatedCost);
         });
 
-        Map<String, Double> costs = new TreeMap<>();
+        Set<String> closed = new HashSet<>();
 
         while (!open.isEmpty()) {
             Node n = open.remove();
 
-            costs.put(n.state, n.accumulatedCost);
+            if (closed.contains(n.state))
+                continue;
+
+            closed.add(n.state);
 
             for (StateSpace.Successor s : stateSpace.getPredecessors(n.state)) {
                 Node m = n.constructChild(s);
 
-                if (opened.contains(m.state))
+                if (closed.contains(m.state) || costs.containsKey(m.state) && costs.get(m.state) <= m.accumulatedCost)
                     continue;
 
-                opened.add(m.state);
+                costs.put(m.state, m.accumulatedCost);
                 open.add(m);
             }
         }
