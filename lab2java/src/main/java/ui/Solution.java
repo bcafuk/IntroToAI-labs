@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Solution {
     public static void main(String... args) {
@@ -15,10 +14,12 @@ public class Solution {
             case "resolution" -> {
                 String clauseFile = args[1];
 
-                List<Clause> clauses;
+                List<String> lines;
 
                 try {
-                    clauses = parseClauses(Files.lines(Path.of(clauseFile)));
+                    lines = Files.lines(Path.of(clauseFile))
+                                 .filter(line -> !line.startsWith("#"))
+                                 .collect(Collectors.toList());
                 } catch (IOException e) {
                     System.err.println("Error reading clauses from path " + clauseFile);
 
@@ -26,13 +27,23 @@ public class Solution {
                     return;
                 }
 
-                Clause goal = clauses.remove(clauses.size() - 1);
+                String goalText = lines.remove(lines.size() - 1);
 
-                Clause result = RefutationResolver.resolution(clauses, goal);
+                List<Clause> clauses = lines.stream()
+                                            .map(Clause::parse)
+                                            .filter(Objects::nonNull)
+                                            .collect(Collectors.toList());
+                Clause goal = Clause.parse(goalText);
+
+                Clause result;
+                if (goal == null)
+                    result = new Clause();
+                else
+                    result = RefutationResolver.resolution(clauses, goal);
 
                 System.out.println(clauseTrace(result));
 
-                System.out.print("[CONCLUSION]: " + goal.toString() + " is ");
+                System.out.print("[CONCLUSION]: " + goalText.toLowerCase() + " is ");
                 if (result == null)
                     System.out.println("unknown");
                 else
@@ -45,7 +56,11 @@ public class Solution {
                 Set<Clause> clauses;
 
                 try {
-                    clauses = new LinkedHashSet<>(parseClauses(Files.lines(Path.of(clauseFile))));
+                    clauses = Files.lines(Path.of(clauseFile))
+                                   .filter(line -> !line.startsWith("#"))
+                                   .map(Clause::parse)
+                                   .filter(Objects::nonNull)
+                                   .collect(Collectors.toCollection(LinkedHashSet::new));
                 } catch (IOException e) {
                     System.err.println("Error reading clauses from path " + clauseFile);
 
@@ -73,7 +88,7 @@ public class Solution {
                                      else
                                          result = RefutationResolver.resolution(new LinkedList<>(clauses), clause);
 
-                                     System.out.print("[CONCLUSION]: " + clauseText + " is ");
+                                     System.out.print("[CONCLUSION]: " + clauseText.toLowerCase() + " is ");
                                      if (result == null)
                                          System.out.println("unknown");
                                      else
@@ -91,13 +106,6 @@ public class Solution {
             }
             default -> throw new IllegalArgumentException("Unknown mode " + mode);
         }
-    }
-
-    public static List<Clause> parseClauses(Stream<String> lines) {
-        return lines.filter(line -> !line.startsWith("#"))
-                    .map(Clause::parse)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
     }
 
     public static String clauseTrace(Clause clause) {
