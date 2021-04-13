@@ -86,7 +86,7 @@ public class Clause {
 
             Boolean prevValue = clause.literals.put(atom, value);
             if (prevValue != null && prevValue != value)
-                throw new IllegalArgumentException("Tautology for atom " + atom);
+                return null;
         }
 
 

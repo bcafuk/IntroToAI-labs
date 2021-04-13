@@ -51,6 +51,7 @@ public class Solution {
     public static List<Clause> parseClauses(Stream<String> lines) {
         return lines.filter(line -> !line.startsWith("#"))
                     .map(Clause::parse)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
     }
 
