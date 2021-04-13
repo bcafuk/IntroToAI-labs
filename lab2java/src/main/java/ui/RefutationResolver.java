@@ -4,6 +4,9 @@ import java.util.*;
 
 public class RefutationResolver {
     static Clause resolution(List<Clause> inputClauses, Clause goal) {
+        if (goal == null)
+            return new Clause();
+
         List<Clause> clauses = new ArrayList<>(inputClauses);
         Set<Integer> support = new HashSet<>();
 

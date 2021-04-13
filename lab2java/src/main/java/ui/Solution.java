@@ -37,11 +37,7 @@ public class Solution {
                                     .collect(Collectors.toList());
         Clause goal = Clause.parse(goalText);
 
-        Clause result;
-        if (goal == null)
-            result = new Clause();
-        else
-            result = RefutationResolver.resolution(clauses, goal);
+        Clause result = RefutationResolver.resolution(clauses, goal);
 
         if (result != null)
             System.out.println(clauseTrace(result));
@@ -73,12 +69,7 @@ public class Solution {
                      }
                      case '-' -> clauses.remove(clause);
                      case '?' -> {
-                         Clause result;
-
-                         if (clause == null)
-                             result = null;
-                         else
-                             result = RefutationResolver.resolution(new LinkedList<>(clauses), clause);
+                         Clause result = RefutationResolver.resolution(new LinkedList<>(clauses), clause);
 
                          System.out.println();
                          if (result != null)
