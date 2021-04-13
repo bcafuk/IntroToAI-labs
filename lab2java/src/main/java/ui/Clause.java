@@ -23,8 +23,8 @@ public class Clause {
     }
 
     public boolean subsumes(Clause that) {
-        for (var entry : that.literals.entrySet())
-            if (this.literals.get(entry.getKey()) != entry.getValue())
+        for (var entry : this.literals.entrySet())
+            if (that.literals.get(entry.getKey()) != entry.getValue())
                 return false;
 
         return true;
