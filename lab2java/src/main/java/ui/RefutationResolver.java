@@ -7,75 +7,77 @@ public class RefutationResolver {
         if (goal == null)
             return new Clause();
 
-        List<Clause> clauses = new ArrayList<>(inputClauses);
-        Set<Integer> support = new HashSet<>();
+        Set<Clause> goalInverse = goal.inverse();
 
-        Set<IntPair> openedPairs = new HashSet<>();
-        Set<Clause> opened = new HashSet<>();
-        Queue<Integer> open = new LinkedList<>();
+        Set<Clause> clauses = nonReduntant(inputClauses);
+        clauses.addAll(goalInverse);
 
-        clauses.addAll(goal.inverse());
-        for (int i = inputClauses.size(); i < clauses.size(); i++) {
-            support.add(i);
-            open.add(i);
-        }
+        Set<Clause> opened = new HashSet<>(goalInverse);
+        Queue<Clause> open = new LinkedList<>(goalInverse);
 
         while (!open.isEmpty()) {
-            int clause1 = open.poll();
+            Clause clause1 = open.poll();
 
-            for (int clause2 = 0, clauseCount = clauses.size(); clause2 < clauseCount; clause2++) {
+            Set<Clause> newClauses = new HashSet<>();
+
+            for (Clause clause2 : clauses) {
                 if (clause1 == clause2)
                     continue;
 
-                IntPair clausePair = new IntPair(clause1, clause2);
-
-                if (!openedPairs.add(clausePair))
-                    continue;
-
-                Clause newClause = Clause.resolve(clauses.get(clause1), clauses.get(clause2));
-                if (!opened.add(newClause))
-                    continue;
-
+                Clause newClause = Clause.resolve(clause1, clause2);
                 if (newClause == null)
                     continue;
                 if (newClause.isNil())
                     return newClause;
 
-                int newClauseIndex = clauses.size();
-                support.add(newClauseIndex);
-                open.add(newClauseIndex);
-                clauses.add(newClause);
+                if (opened.add(newClause))
+                    newClauses.add(newClause);
+            }
+
+            for (Clause newClause : newClauses) {
+                boolean isSubsumed = false;
+
+                for (Iterator<Clause> existingIt = clauses.iterator(); existingIt.hasNext(); ) {
+                    Clause existing = existingIt.next();
+
+                    if (existing.subsumes(newClause)) {
+                        isSubsumed = true;
+                        break;
+                    }
+
+                    if (newClause.subsumes(existing)) {
+                        existingIt.remove();
+                        open.removeIf(c -> c == existing);
+                    }
+                }
+
+                if (!isSubsumed) {
+                    clauses.add(newClause);
+                    open.add(newClause);
+                }
             }
         }
 
         return null;
     }
 
-    private static class IntPair {
-        public final int a;
-        public final int b;
+    private static Set<Clause> nonReduntant(List<Clause> input) {
+        Set<Clause> output = new HashSet<>();
 
-        public IntPair(int a, int b) {
-            if (a < b) {
-                this.a = a;
-                this.b = b;
-            } else {
-                this.a = b;
-                this.b = a;
+        for (Clause a : input) {
+            boolean isSubsumed = false;
+
+            for (Clause b : input) {
+                if (a != b && b.subsumes(a)) {
+                    isSubsumed = true;
+                    break;
+                }
             }
+
+            if (!isSubsumed)
+                output.add(a);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            IntPair intPair = (IntPair) o;
-            return a == intPair.a && b == intPair.b;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(a, b);
-        }
+        return output;
     }
 }
