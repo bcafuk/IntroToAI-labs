@@ -3,7 +3,7 @@ package ui;
 import java.util.*;
 
 public class RefutationResolver {
-    static Clause resolution(List<Clause> inputClauses, Clause goal) {
+    static Clause resolution(Collection<Clause> inputClauses, Clause goal) {
         if (goal == null)
             return new Clause();
 
@@ -61,7 +61,7 @@ public class RefutationResolver {
         return null;
     }
 
-    private static Set<Clause> nonReduntant(List<Clause> input) {
+    private static Set<Clause> nonReduntant(Collection<Clause> input) {
         Set<Clause> output = new HashSet<>();
 
         for (Clause a : input) {

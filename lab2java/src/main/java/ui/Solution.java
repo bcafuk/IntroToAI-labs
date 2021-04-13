@@ -67,7 +67,7 @@ public class Solution {
                      }
                      case '-' -> clauses.remove(clause);
                      case '?' -> {
-                         Clause result = RefutationResolver.resolution(new LinkedList<>(clauses), clause);
+                         Clause result = RefutationResolver.resolution(clauses, clause);
 
                          System.out.println();
                          if (result != null)
