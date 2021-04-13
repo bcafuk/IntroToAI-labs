@@ -3,7 +3,7 @@ package ui;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +27,16 @@ public class Solution {
                 }
 
                 Clause goal = clauses.remove(clauses.size() - 1);
-                clauses.addAll(goal.inverse());
+
+                Clause result = RefutationResolver.resolution(clauses, goal);
+
+                System.out.println(clauseTrace(result));
+
+                System.out.print("[CONCLUSION]: " + goal.toString() + " is ");
+                if (result == null)
+                    System.out.println("unknown");
+                else
+                    System.out.println("true");
             }
             case "cookbook" -> {
                 String clauseFile = args[1];
@@ -39,9 +48,52 @@ public class Solution {
         }
     }
 
-    private static List<Clause> parseClauses(Stream<String> lines) {
+    public static List<Clause> parseClauses(Stream<String> lines) {
         return lines.filter(line -> !line.startsWith("#"))
                     .map(Clause::parse)
                     .collect(Collectors.toList());
+    }
+
+    public static String clauseTrace(Clause clause) {
+        if (clause == null)
+            return "";
+
+        LinkedHashMap<Clause, Integer> indices = new LinkedHashMap<>();
+        traverseIndices(clause, indices);
+
+        List<String> lines = new LinkedList<>();
+
+        for (var entry : indices.entrySet()) {
+            boolean isRootClause = entry.getKey().parent1 == null && entry.getKey().parent2 == null;
+
+            StringBuilder line = new StringBuilder();
+            line.append(entry.getValue())
+                .append(". ")
+                .append(entry.getKey().toString());
+
+            if (!isRootClause) {
+                line.append(" (")
+                    .append(indices.get(entry.getKey().parent1))
+                    .append(", ")
+                    .append(indices.get(entry.getKey().parent2))
+                    .append(")");
+            }
+
+            lines.add(0, line.toString());
+        }
+
+        return String.join("\n", lines);
+    }
+
+    private static void traverseIndices(Clause clause, Map<Clause, Integer> indices) {
+        int index = indices.size();
+        indices.put(clause, index);
+
+        boolean isRootClause = clause.parent1 == null && clause.parent2 == null;
+
+        if (!isRootClause) {
+            traverseIndices(clause.parent1, indices);
+            traverseIndices(clause.parent2, indices);
+        }
     }
 }
