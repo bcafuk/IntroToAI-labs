@@ -38,11 +38,56 @@ public class Solution {
                 else
                     System.out.println("true");
             }
-            case "cookbook" -> {
+            case "cooking" -> {
                 String clauseFile = args[1];
                 String commandFile = args[2];
 
-                throw new RuntimeException("Not yet implemented");
+                Set<Clause> clauses;
+
+                try {
+                    clauses = new LinkedHashSet<>(parseClauses(Files.lines(Path.of(clauseFile))));
+                } catch (IOException e) {
+                    System.err.println("Error reading clauses from path " + clauseFile);
+
+                    System.exit(1);
+                    return;
+                }
+
+                try {
+                    Files.lines(Path.of(commandFile))
+                         .forEachOrdered(line -> {
+                            char command = line.charAt(line.length() - 1);
+                            String clauseText = line.substring(0, line.length() - 2);
+                            Clause clause = Clause.parse(clauseText);
+
+                            switch (command) {
+                                case '+' -> {
+                                    if (clause != null) clauses.add(clause);
+                                }
+                                case '-' -> clauses.remove(clause);
+                                case '?' -> {
+                                    Clause result;
+
+                                    if (clause == null)
+                                        result = null;
+                                    else
+                                        result = RefutationResolver.resolution(new LinkedList<>(clauses), clause);
+
+                                    System.out.print("[CONCLUSION]: " + clauseText + " is ");
+                                    if (result == null)
+                                        System.out.println("unknown");
+                                    else
+                                        System.out.println("true");
+                                }
+                                default -> throw new RuntimeException("Illegal command " + command);
+                            }
+                         });
+                } catch (IOException e) {
+                    System.err.println("Error reading commands from path " + commandFile);
+
+                    System.exit(1);
+                    return;
+                }
             }
             default -> throw new IllegalArgumentException("Unknown mode " + mode);
         }
