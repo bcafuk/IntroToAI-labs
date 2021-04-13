@@ -23,9 +23,7 @@ public class Solution {
     }
 
     private static void resolution(String clauseFile) throws IOException {
-        List<String> lines;
-
-        lines = Files.lines(Path.of(clauseFile))
+        List<String> lines = Files.lines(Path.of(clauseFile))
                      .filter(line -> !line.startsWith("#"))
                      .collect(Collectors.toList());
 
