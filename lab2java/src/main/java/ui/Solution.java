@@ -38,7 +38,7 @@ public class Solution {
         Clause result = RefutationResolver.resolution(clauses, goal);
 
         if (result != null)
-            System.out.println(clauseTrace(result));
+            printClauseTrace(result, clauses, goal);
 
         System.out.print("[CONCLUSION]: " + goalText.toLowerCase() + " is ");
         if (result == null)
@@ -71,7 +71,7 @@ public class Solution {
 
                          System.out.println();
                          if (result != null)
-                             System.out.println(clauseTrace(result));
+                             printClauseTrace(result, clauses, clause);
 
                          System.out.print("[CONCLUSION]: " + clauseText.toLowerCase() + " is ");
                          if (result == null)
@@ -84,43 +84,60 @@ public class Solution {
              });
     }
 
-    public static String clauseTrace(Clause clause) {
-        LinkedHashMap<Clause, Integer> indices = new LinkedHashMap<>();
-        traverseIndices(clause, indices);
+    public static void printClauseTrace(Clause clause, Collection<Clause> premises, Clause goal) {
+        Set<Clause> goalInverse = goal == null ? Set.of(new Clause()) : goal.inverse();
 
-        List<String> lines = new LinkedList<>();
+        LinkedHashSet<Clause> clauseSet = new LinkedHashSet<>();
+        traverseIndices(clause, clauseSet);
 
-        for (var entry : indices.entrySet()) {
-            boolean isRootClause = entry.getKey().parent1 == null && entry.getKey().parent2 == null;
+        List<Clause> clauseList = new ArrayList<>(clauseSet);
+        Collections.reverse(clauseList);
 
-            StringBuilder line = new StringBuilder();
-            line.append(entry.getValue())
-                .append(". ")
-                .append(entry.getKey().toString());
+        clauseList.sort((a, b) -> {
+            boolean aIsPremise = premises.contains(a);
+            boolean bIsPremise = premises.contains(b);
+
+            if (aIsPremise != bIsPremise)
+                return (bIsPremise ? 1 : 0) - (aIsPremise ? 1 : 0);
+
+            boolean aIsGoal = goalInverse.contains(a);
+            boolean bIsGoal = goalInverse.contains(b);
+
+            if (aIsGoal != bIsGoal)
+                return (bIsGoal ? 1 : 0) - (aIsGoal ? 1 : 0);
+
+            return 0;
+        });
+
+        for (int i = 0; i < clauseList.size(); i++) {
+            Clause c = clauseList.get(i);
+
+            boolean isRootClause = c.parent1 == null && c.parent2 == null;
+
+            System.out.print(i);
+            System.out.print(". ");
+            System.out.print(c.toString());
 
             if (!isRootClause) {
-                line.append(" (")
-                    .append(indices.get(entry.getKey().parent1))
-                    .append(", ")
-                    .append(indices.get(entry.getKey().parent2))
-                    .append(")");
+                System.out.print(" (");
+                System.out.print(clauseList.indexOf(c.parent2));
+                System.out.print(", ");
+                System.out.print(clauseList.indexOf(c.parent1));
+                System.out.print(")");
             }
 
-            lines.add(0, line.toString());
+            System.out.println();
         }
-
-        return String.join("\n", lines);
     }
 
-    private static void traverseIndices(Clause clause, Map<Clause, Integer> indices) {
-        int index = indices.size();
-        indices.put(clause, index);
+    private static void traverseIndices(Clause clause, Set<Clause> clauses) {
+        clauses.add(clause);
 
         boolean isRootClause = clause.parent1 == null && clause.parent2 == null;
 
         if (!isRootClause) {
-            traverseIndices(clause.parent1, indices);
-            traverseIndices(clause.parent2, indices);
+            traverseIndices(clause.parent1, clauses);
+            traverseIndices(clause.parent2, clauses);
         }
     }
 }
