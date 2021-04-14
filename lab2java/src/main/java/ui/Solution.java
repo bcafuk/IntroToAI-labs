@@ -24,8 +24,8 @@ public class Solution {
 
     private static void resolution(String clauseFile) throws IOException {
         List<String> lines = Files.lines(Path.of(clauseFile))
-                     .filter(line -> !line.startsWith("#"))
-                     .collect(Collectors.toList());
+                                  .filter(line -> !line.startsWith("#"))
+                                  .collect(Collectors.toList());
 
         String goalText = lines.remove(lines.size() - 1);
 
