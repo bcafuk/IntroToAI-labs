@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Dataset {
+    private static final double LOG_2 = Math.log(2.0);
+
     private final String[] labels;
     private final List<String[]> data;
 
@@ -78,7 +80,60 @@ public class Dataset {
         return subsets;
     }
 
-    // TODO: Implement information gain
+    public Map<Integer, Double> informationGain(Set<Integer> featureIndices, int classIndex) {
+        Map<String, Integer> totalClassFrequencies = new HashMap<>();
+        Map<Integer, Map<String, Map<String, Integer>>> classFrequencies = new TreeMap<>();
+
+        for (int featureIndex : featureIndices)
+            classFrequencies.put(featureIndex, new HashMap<>());
+
+        for (String[] datum : data) {
+            totalClassFrequencies.merge(datum[classIndex], 1, (f, df) -> f + 1);
+
+            for (int featureIndex : featureIndices)
+                classFrequencies.get(featureIndex)
+                                .computeIfAbsent(datum[featureIndex], k -> new HashMap<>())
+                                .merge(datum[classIndex], 1, (f, df) -> f + 1);
+        }
+
+        double totalEntropy = getEntropyForFrequencies(totalClassFrequencies);
+
+        Map<Integer, Double> gains = new HashMap<>();
+
+        for (int featureIndex : featureIndices) {
+            double gain = totalEntropy;
+
+            for (Map<String, Integer> frequencies : classFrequencies.get(featureIndex).values()) {
+                int count = getTotalCount(frequencies);
+                gain -= (double) count / numData() * getEntropyForFrequencies(frequencies, count);
+            }
+
+            gains.put(featureIndex, gain);
+        }
+
+        return gains;
+    }
+
+    private int getTotalCount(Map<String, Integer> frequencies) {
+        return frequencies.values()
+                          .stream()
+                          .mapToInt(c -> c)
+                          .sum();
+    }
+
+    private double getEntropyForFrequencies(Map<String, Integer> frequencies) {
+        return getEntropyForFrequencies(frequencies, getTotalCount(frequencies));
+    }
+
+    private double getEntropyForFrequencies(Map<String, Integer> frequencies, int totalCount) {
+        return -frequencies.values()
+                           .stream()
+                           .mapToDouble(c -> {
+                               double p = (double) c / totalCount;
+                               return p * Math.log(p) / LOG_2;
+                           })
+                           .sum();
+    }
 
     public static Dataset parse(Stream<String> lines) {
         Objects.requireNonNull(lines);
