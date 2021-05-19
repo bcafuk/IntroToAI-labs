@@ -38,11 +38,16 @@ public class ID3 {
 
         Map<Integer, Double> informationGains = subset.informationGain(featureSet, classIndex);
 
+        double maxInformationGain = informationGains.values()
+                                                    .stream()
+                                                    .max(Comparator.naturalOrder())
+                                                    .orElseThrow();
         int featureIndex = informationGains.entrySet()
                                            .stream()
-                                           .max(Map.Entry.comparingByValue())
-                                           .orElseThrow()
-                                           .getKey();
+                                           .filter(e -> e.getValue().equals(maxInformationGain))
+                                           .map(Map.Entry::getKey)
+                                           .min(Comparator.comparing(subset::getLabelForIndex))
+                                           .orElseThrow();
 
         Node node = new Node(featureIndex, subset);
 
