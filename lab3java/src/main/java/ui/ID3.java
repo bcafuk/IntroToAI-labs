@@ -44,7 +44,7 @@ public class ID3 {
             newFeatureSet.remove(featureIndex);
 
             TreeNode subtree = id3(subSubset.getValue(), subset, newFeatureSet);
-                    node.append(subSubset.getKey(), subtree);
+            node.append(subSubset.getKey(), subtree);
         }
 
         return node;
@@ -57,8 +57,15 @@ public class ID3 {
         return root.predict(datum);
     }
 
+    @Override
+    public String toString() {
+        return root.buildString(new StringBuilder(), 1).toString();
+    }
+
     private interface TreeNode {
         String predict(String[] datum);
+
+        StringBuilder buildString(StringBuilder prefix, int level);
     }
 
     private class Node implements TreeNode {
@@ -85,6 +92,26 @@ public class ID3 {
             else
                 return subset.mostFrequentFor(classIndex);
         }
+
+        @Override
+        public StringBuilder buildString(StringBuilder prefix, int level) {
+            String featureLabel = dataset.getLabelForIndex(featureIndex);
+            StringBuilder sb = new StringBuilder();
+
+            for (Map.Entry<String, TreeNode> subtree : subtrees.entrySet()) {
+                StringBuilder pb = new StringBuilder(prefix)
+                        .append(level)
+                        .append(':')
+                        .append(featureLabel)
+                        .append('=')
+                        .append(subtree.getKey())
+                        .append(' ');
+
+                sb.append(subtree.getValue().buildString(pb, level + 1));
+            }
+
+            return sb;
+        }
     }
 
     private static class Leaf implements TreeNode {
@@ -97,6 +124,13 @@ public class ID3 {
         @Override
         public String predict(String[] datum) {
             return predictedClass;
+        }
+
+        @Override
+        public StringBuilder buildString(StringBuilder prefix, int level) {
+            return new StringBuilder(prefix)
+                    .append(predictedClass)
+                    .append('\n');
         }
     }
 }

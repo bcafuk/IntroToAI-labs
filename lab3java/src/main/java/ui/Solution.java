@@ -33,7 +33,10 @@ public class Solution {
 
 		id3.fit(trainingData, classIndex);
 
-		System.out.println("[PREDICTIONS]:");
+		System.out.println("[BRANCHES]:");
+		System.out.print(id3.toString());
+
+		System.out.print("[PREDICTIONS]:");
 		for (String[] datum : testingData) {
 			System.out.print(' ');
 			System.out.print(id3.predict(datum));
