@@ -41,12 +41,21 @@ public class Solution {
         System.out.println("[BRANCHES]:");
         System.out.print(id3.toString());
 
+        int correctPredictions = 0;
+
         System.out.print("[PREDICTIONS]:");
         for (String[] datum : testingData) {
+            String prediction = id3.predict(datum);
+
             System.out.print(' ');
-            System.out.print(id3.predict(datum));
+            System.out.print(prediction);
+
+            if (prediction.equals(datum[classIndex]))
+                correctPredictions++;
         }
         System.out.println();
+
+        System.out.printf("[ACCURACY]: %.5f\n", (double)correctPredictions / testingData.numData());
     }
 
 }
