@@ -3,9 +3,19 @@ package ui;
 import java.util.*;
 
 public class ID3 {
+    private final int maxDepth;
+
     private int classIndex = -1;
     private Dataset dataset = null;
     private TreeNode root = null;
+
+    public ID3() {
+        this(Integer.MAX_VALUE);
+    }
+
+    public ID3(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
 
     public void fit(Dataset dataset, int classIndex) {
         this.classIndex = classIndex;
@@ -16,17 +26,15 @@ public class ID3 {
             if (i != classIndex)
                 featureSet.add(i);
 
-        root = id3(dataset, dataset, featureSet);
+        root = id3(dataset, dataset, featureSet, 0);
     }
 
-    private TreeNode id3(Dataset subset, Dataset parent, Set<Integer> featureSet) {
+    private TreeNode id3(Dataset subset, Dataset parent, Set<Integer> featureSet, int depth) {
         if (subset.isEmpty())
             return new Leaf(parent.mostFrequentFor(classIndex));
 
-        String mostFreqClass = subset.mostFrequentFor(classIndex);
-
-        if (featureSet.isEmpty() || subset.distinctValueCount(classIndex) == 1)
-            return new Leaf(mostFreqClass);
+        if (depth >= maxDepth || featureSet.isEmpty() || subset.distinctValueCount(classIndex) == 1)
+            return new Leaf(subset.mostFrequentFor(classIndex));
 
         Map<Integer, Double> informationGains = subset.informationGain(featureSet, classIndex);
 
@@ -43,7 +51,7 @@ public class ID3 {
             Set<Integer> newFeatureSet = new HashSet<>(featureSet);
             newFeatureSet.remove(featureIndex);
 
-            TreeNode subtree = id3(subSubset.getValue(), subset, newFeatureSet);
+            TreeNode subtree = id3(subSubset.getValue(), subset, newFeatureSet, depth + 1);
             node.append(subSubset.getKey(), subtree);
         }
 

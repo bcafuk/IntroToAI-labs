@@ -29,7 +29,12 @@ public class Solution {
 
         int classIndex = trainingData.getFeatureCount() - 1;
 
-        ID3 id3 = new ID3();
+        ID3 id3;
+
+        if (args.length > 2)
+        	id3 = new ID3(Integer.parseInt(args[2]));
+        else
+        	id3 = new ID3();
 
         id3.fit(trainingData, classIndex);
 
