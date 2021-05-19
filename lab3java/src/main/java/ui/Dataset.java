@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Dataset {
+public class Dataset implements Iterable<String[]> {
     private static final double LOG_2 = Math.log(2.0);
 
     private final String[] labels;
@@ -58,7 +58,7 @@ public class Dataset {
     }
 
     public String mostFrequentFor(int featureIndex) {
-        Map<String, Integer> frequencies = new HashMap<>();
+        Map<String, Integer> frequencies = new TreeMap<>();
 
         for (String[] datum : data)
             frequencies.merge(datum[featureIndex], 1, (f, df) -> f + 1);
@@ -149,5 +149,10 @@ public class Dataset {
 
     public static boolean labelsMatch(Dataset d1, Dataset d2) {
         return Arrays.equals(d1.labels, d2.labels);
+    }
+
+    @Override
+    public Iterator<String[]> iterator() {
+        return data.iterator();
     }
 }
