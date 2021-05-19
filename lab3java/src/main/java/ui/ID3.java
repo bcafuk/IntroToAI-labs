@@ -7,8 +7,8 @@ public class ID3 {
     private Dataset dataset = null;
     private TreeNode root = null;
 
-    public void fit(Dataset dataset, String classLabel) {
-        classIndex = dataset.getIndexForLabel(classLabel);
+    public void fit(Dataset dataset, int classIndex) {
+        this.classIndex = classIndex;
         this.dataset = dataset;
 
         Set<Integer> featureSet = new HashSet<>();
@@ -20,8 +20,34 @@ public class ID3 {
     }
 
     private TreeNode id3(Dataset subset, Dataset parent, Set<Integer> featureSet) {
-        // TODO: Implement ID3
-        return null;
+        if (subset.isEmpty())
+            return new Leaf(parent.mostFrequentFor(classIndex));
+
+        String mostFreqClass = subset.mostFrequentFor(classIndex);
+
+        if (featureSet.isEmpty() || subset.distinctValueCount(classIndex) == 1)
+            return new Leaf(mostFreqClass);
+
+        Map<Integer, Double> informationGains = subset.informationGain(featureSet, classIndex);
+
+        int featureIndex = informationGains.entrySet()
+                                           .stream()
+                                           .max(Map.Entry.comparingByValue())
+                                           .orElseThrow()
+                                           .getKey();
+
+        Node node = new Node(featureIndex, subset);
+
+        Map<String, Dataset> subSubsets = subset.splitBy(featureIndex);
+        for (Map.Entry<String, Dataset> subSubset : subSubsets.entrySet()) {
+            Set<Integer> newFeatureSet = new HashSet<>(featureSet);
+            newFeatureSet.remove(featureIndex);
+
+            TreeNode subtree = id3(subSubset.getValue(), subset, newFeatureSet);
+                    node.append(subSubset.getKey(), subtree);
+        }
+
+        return node;
     }
 
     public String predict(String[] datum) {

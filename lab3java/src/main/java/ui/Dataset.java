@@ -70,6 +70,13 @@ public class Dataset implements Iterable<String[]> {
                           .getKey();
     }
 
+    public long distinctValueCount(int featureIndex) {
+        return data.stream()
+                   .map(d -> d[featureIndex])
+                   .distinct()
+                   .count();
+    }
+
     public Map<String, Dataset> splitBy(int featureIndex) {
         Map<String, Dataset> subsets = new TreeMap<>();
 

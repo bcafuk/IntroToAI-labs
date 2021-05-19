@@ -26,6 +26,19 @@ public class Solution {
 			System.exit(1);
 			return;
 		}
+
+		int classIndex = trainingData.getFeatureCount() - 1;
+
+		ID3 id3 = new ID3();
+
+		id3.fit(trainingData, classIndex);
+
+		System.out.println("[PREDICTIONS]:");
+		for (String[] datum : testingData) {
+			System.out.print(' ');
+			System.out.print(id3.predict(datum));
+		}
+		System.out.println();
 	}
 
 }
